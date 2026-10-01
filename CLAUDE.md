@@ -4,27 +4,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Browser-only React 16 app (Create React App via `react-scripts` 3, wrapped with `@rescripts`) that generates FIRST LEGO League tournament schedules and a zip of printable PDFs, CSVs, and a closing-ceremony PPTX. No backend. Served from GitHub Pages; an Electron/wine build exists but is untested.
+Browser-only React 16 app (Create React App, `react-scripts` 5) that generates FIRST LEGO League tournament schedules and a zip of printable PDFs, CSVs, and a closing-ceremony PPTX. No backend. Served from GitHub Pages.
 
 ## Commands
 
-Requires Node 16 and yarn classic (v1). `yarn install` first.
+Requires Node 24 (`.nvmrc`) and Yarn 4 through Corepack (`corepack enable`; the version is pinned in `package.json`). `yarn install` first.
 
 ```sh
 yarn start                                   # dev server on :3000
 yarn build                                   # production build to build/
 CI=true yarn test                            # run all tests once (jsdom)
 CI=true yarn test src/App.test.js            # single test file
+CI=true yarn test -t "chains match rounds"   # single test by name
 yarn deploy                                  # build + push build/ to gh-pages (master only, needs repo write access)
-yarn electron-pack                           # electron-builder, Windows + Linux targets
 ```
 
-The only test is a smoke render of `App`. `.rescriptsrc.js` + `.webpack.config.js` set webpack `target: 'electron-renderer'` for every build, including the web one.
+Yarn 4 uses the `node-modules` linker (`.yarnrc.yml`); do not switch to PnP, react-scripts does not support it.
 
-## Known breakage on master
+## Tests
 
-- `src/index.js` imports `./registerServiceWorker`, which was deleted in commit 49c8035. The app will not compile until that import and call are removed. `public/service-worker.js` is now a one-shot self-unregistering worker and must stay as-is so old installs stop caching.
+`src/test/helpers.js` is the shared fixture: `seedRandom()` replaces `Math.random` with a seeded generator so schedules are reproducible, `scheduledEvent()` builds and solves a default event, and `assertValidSchedule()` checks the invariants every finished schedule must hold (every team once per session, travel time respected, nothing starts inside a break). Setup callbacks passed to `scheduledEvent` run before `populateFLL()`, so they can set `nPracs`, `pilot`, `nTables`.
+
+React 16.8 has no async `act`; in `App.test.js` click inside a sync `act()` and then `await` a plain sleep.
+
+`outputs.test.js` renders a real PDF and PPTX blob, which takes ~20s; everything else is fast.
+
+## Gotchas
+
 - `App.js` has its own `VERSION` constant that must be bumped alongside `package.json` `version`; it is stamped into saved `.schedule` files.
+- `public/service-worker.js` is a one-shot self-unregistering worker left for users with the old cached build. Nothing registers a worker any more; leave the file in place.
+- A day that is too short for the requested sessions is not an exception: the scheduler returns `errors > 0` after 500 retries and the UI alerts. 36 teams with a practice round in the default 08:30 to 17:00 day is one such case.
 
 ## Architecture
 

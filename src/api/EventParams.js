@@ -1067,7 +1067,7 @@ export class EventParams {
     E._volunteers = o._volunteers;
     E.sponsors.local = o.sponsors;
     E.pageFormat = o.pageFormat;
-    if (!E.errors) E.errors = Infinity;
+    if (E.errors == null) E.errors = Infinity;
     console.log(E);
     return E;
   }

@@ -29,20 +29,20 @@ TODO: step-by-step guide
 
 ### Building a development copy
 
-1. Ensure you have `yarn classic (v1)` installed (see section footnote)
-2. Ensure you have `node 16` installed (see section footnote)
+1. Ensure you have Node 24 (current LTS) installed. The repo has an `.nvmrc`, so `nvm use` / `fnm use` pick it up.
+2. Enable Corepack so the pinned Yarn version in `package.json` is used automatically: `corepack enable`
 3. Clone the repository `git clone git@github.com:first-australia/tournament-in-a-box.git`
 4. Install the dependencies `yarn install`
 
 If you wish to develop a feature:
 
-4. Create an issue in GitHub
-5. Checkout the latest master, `git checkout master; git fetch; git pull`
-6. Checkout into a new branch for development `git checkout -b ISSUE_NUMBER-dev-branch-title`
-7. If master updates during your work run `git rebase master` (to rerun and your development commits after bringing master into your dev branch)
-8. Push and create a GitHub PR `git push`
+5. Create an issue in GitHub
+6. Checkout the latest master, `git checkout master; git fetch; git pull`
+7. Checkout into a new branch for development `git checkout -b ISSUE_NUMBER-dev-branch-title`
+8. If master updates during your work run `git rebase master` (to rerun and your development commits after bringing master into your dev branch)
+9. Push and create a GitHub PR `git push`
 
-9. Use the commands `yarn test` & `yarn start` to run your development copy
+Use `yarn start` to run your development copy and `yarn test` to run the tests (`CI=true yarn test` runs them once instead of in watch mode).
 
 ### To deploy to production
 
@@ -54,29 +54,28 @@ Don't deploy from a branch other than `master`.
 2. Run the pre-deploy (build) script `yarn predeploy`
 3. Deploy to GitHub, on the `gh-pages` branch `yarn deploy`
    - NOTE: You do need your ssh keys setup, and to have write access to the repository for this
-   - (see section footnote)
 
 #### Using a container
 
-Often containers are very useful for devs, so that they can separate the projects installations (like `yarn` & `node16`) from their main operation system (IE: we don't want to install many versions of `node` in our own computer). Containers also can help ensure consistencies in installation across different machines too.
+Often containers are very useful for devs, so that they can separate the projects installations (like `yarn` & `node`) from their main operation system (IE: we don't want to install many versions of `node` in our own computer). Containers also can help ensure consistencies in installation across different machines too.
 
 I suggest Podman, though Docker is often interoperable too.
 
 ```sh
 # In your .zprofile or .bashrc or (.bashalias or .zshalias (which is sourced by .bashrc or.zprofile))
 
-alias ms16='podman run -it \
+alias ms24='podman run -it \
   --workdir /home/node/ \
   --rm=true \
   --volume=$HOME/.ssh:/root/.ssh:ro \
   --volume=$HOME/.config/git/config:/root/.gitconfig:ro \
   --volume=./:/home/node/ \
-  --network=host node:16'
-alias ms16d='ms16 yarn start'
-alias ms16t='ms16 yarn test'
+  --network=host node:24'
+alias ms24d='ms24 yarn start'
+alias ms24t='ms24 yarn test'
 ```
 
-- `it` runs an interactive terminal (for when you don't use the `ms16d` or `ms16t` alias')
+- `it` runs an interactive terminal (for when you don't use the `ms24d` or `ms24t` alias')
 - `rm` deletes the container when you exit, to ensure you don't accumulate many containers
 - `volume=$HOME/.ssh` is used to allow deploying
   - This shares your `ssh` public & private key, that you presumably have linked to GitHub
@@ -88,15 +87,13 @@ alias ms16t='ms16 yarn test'
 
 ### Software stack
 
-This project mostly runs on the internet, served by GitHub Pages.
+This project runs on the internet, served by GitHub Pages.
 
-This project also can be delivered as a wine executable, with the aim of having it run offline from a USB at very remote events. This functionality may not have been tested in a long time.
-
-- Node 16
+- Node 24
+- Yarn 4 (via Corepack)
 - Javascript
-- React
+- React (Create React App / `react-scripts`)
 - Bootstrap ui components
-- JQuery
 
 There is no backend to this project, as it's simple all-in-your-browser software.
 
